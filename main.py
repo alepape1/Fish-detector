@@ -78,12 +78,29 @@ def write_file_txt(output_folder, video_file_name, start_times, end_times):
             last_start_minutes, last_start_seconds = seconds_to_minutes_and_seconds(start_times[-1])
             file.write(f"Pez {len(start_times) + 1}: {last_start_minutes:02d}m {last_start_seconds:02d}s - {end_minutes:02d}m {end_seconds:02d}s\n")
 
-# Función para procesar un video
 def process_video(video_path):
     cap = cv2.VideoCapture(video_path)
+ 
+    # Get the video file name without the extension
     video_file_name = os.path.splitext(os.path.basename(video_path))[0]
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+    # Obtener el número total de fotogramas
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    # Obtener las dimensiones del video
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # Crear un objeto VideoWriter para escribir el segmento del video resumen
+    output_folder = "output"
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)  # Crea la carpeta de salida si no existe
+    output_video_name = os.path.join(output_folder, f"{video_file_name}_resumen.avi")
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter(output_video_name, fourcc, fps, (frame_width, frame_height))
+
+    # Initialize variables for this video
     fish_count = 0
     start_time = None
     detected_fish = []
@@ -94,9 +111,14 @@ def process_video(video_path):
         ret, frame = cap.read()
         if not ret:
             break
-        
+
+        # Obtener el número de fotograma actual
         current_frame = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+
+        # Calcular el porcentaje de progreso
         progress = (current_frame / total_frames) * 100
+
+        # Mostrar el progreso en la consola
         print(f"Procesando {video_file_name}: {progress:.2f}% completado", end="\r")
 
         fish_counter = detect_motion(frame, detected_fish, fish_count)
@@ -109,12 +131,36 @@ def process_video(video_path):
             end_times.append(end_time)
             start_time = None
 
-        k = cv2.waitKey(70) & 0xFF
-        if k == 27:
-            break
+    # Guardar todos los segmentos en el video resumen
+    for start_time, end_time in zip(start_times, end_times):
+        save_video_segment(out, cap, start_time, end_time)
 
-    write_file_txt("output", video_file_name, start_times, end_times)
+    # Liberar los recursos
+    out.release()
     cap.release()
+    
+#Funcion para guardar el video resumen
+def save_video_segment(out, cap, start_time, end_time):
+    # Asegurarse de que el start_time nunca sea menor que 0
+    start_time = max(0, start_time - 1)  # Grabar 1 segundo antes
+    end_time = end_time + 1  # Grabar 1 segundo después
+
+    # Saltar al frame de inicio ajustado (1 segundo antes)
+    cap.set(cv2.CAP_PROP_POS_MSEC, start_time * 1000)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        # Obtener el tiempo actual en segundos
+        current_time = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000
+        
+        # Detener cuando el tiempo actual es mayor que el end_time ajustado (1 segundo después)
+        if current_time > end_time:
+            break
+        
+        out.write(frame)
 
 # Función para procesar videos en paralelo
 def process_videos_in_folder_parallel(folder_path):
@@ -123,6 +169,7 @@ def process_videos_in_folder_parallel(folder_path):
 
     with Pool() as pool:
         pool.map(process_video, video_paths)
+
 
 # Verificar si hay GUI y seleccionar carpeta
 def select_folder():
