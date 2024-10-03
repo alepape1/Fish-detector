@@ -1,7 +1,7 @@
 import cv2
 import time
 import numpy as np
-from multiprocessing import Pool
+from multiprocessing import cpu_count,Pool
 import os
 import tkinter as tk
 from tkinter import filedialog  # Asegúrate de incluir esta línea
@@ -106,6 +106,7 @@ def process_video(video_path):
     detected_fish = []
     start_times = []
     end_times = []
+    min_scene_duration = 2  # Minimum 3 seconds for a scene to be saved
 
     while True:
         ret, frame = cap.read()
@@ -133,7 +134,10 @@ def process_video(video_path):
 
     # Guardar todos los segmentos en el video resumen
     for start_time, end_time in zip(start_times, end_times):
-        save_video_segment(out, cap, start_time, end_time)
+        
+        # Add condition to check if the scene is longer than the minimum duration
+        if end_time - start_time > min_scene_duration:
+            save_video_segment(out, cap, start_time, end_time)
 
     # Liberar los recursos
     out.release()
@@ -141,6 +145,8 @@ def process_video(video_path):
 
 #Funcion para guardar el video resumen
 def save_video_segment(out, cap, start_time, end_time):
+
+
     # Asegurarse de que el start_time nunca sea menor que 0
     start_time = max(0, start_time - 1)  # Grabar 1 segundo antes
     end_time = end_time + 1  # Grabar 1 segundo después
@@ -163,11 +169,17 @@ def save_video_segment(out, cap, start_time, end_time):
         out.write(frame)
 
 # Función para procesar videos en paralelo
+
+
 def process_videos_in_folder_parallel(folder_path):
     video_files = [f for f in os.listdir(folder_path) if f.endswith('.mp4') or f.endswith('.avi') or f.endswith('.MOV')]
     video_paths = [os.path.join(folder_path, video_file) for video_file in video_files]
 
-    with Pool() as pool:
+    # Ajustar el número de procesos al número de núcleos
+    num_cores = cpu_count()
+    print(f"Utilizando {num_cores} núcleos para el procesamiento.")
+
+    with Pool(processes=num_cores) as pool:
         pool.map(process_video, video_paths)
 
 
@@ -183,7 +195,7 @@ def select_folder():
 
 if __name__ == "__main__":
 
-    print(cv2.__version__)
+    print("OpenCV2 version: ",cv2.__version__)
 
 
     try:
@@ -193,7 +205,6 @@ if __name__ == "__main__":
         print("La función getNumberOfThreads() no está disponible en esta versión de OpenCV.")
 
 
-    print(f"OpenCV está usando {num_threads} núcleos.")
 
     folder_path = select_folder()
 
