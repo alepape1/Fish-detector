@@ -11,10 +11,12 @@ fgbg = cv2.bgsegm.createBackgroundSubtractorMOG()
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 max_detect = 0
 
+#Seconds to minutes conversion
 def seconds_to_minutes_and_seconds(seconds):
     minutes, seconds = divmod(seconds, 60)
     return int(minutes), int(seconds)
 
+#Detecting movement on frame
 def detect_motion(frame, detected_fish, fish_count):
     # Convertir a escala de grises
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -51,7 +53,7 @@ def detect_motion(frame, detected_fish, fish_count):
                 color = (0, 0, 255)
                 fish_count += 1
                 detected_fish.append((x, y, w, h))
-                print(f"Peces detectados {fish_count}")
+                # print(f"Peces detectados {fish_count}")
 
     # Dibujar el área de interés
     cv2.drawContours(frame, [area_pts], -1, color, 2)
@@ -68,7 +70,7 @@ def detect_motion(frame, detected_fish, fish_count):
 
     return fish_count
 
-
+#Write output files
 def write_file_txt(output_folder, video_file_name, start_times, end_times):
     
     if not os.path.exists(output_folder):
@@ -136,6 +138,7 @@ def process_video(video_path):
     write_file_txt("output", video_file_name, start_times, end_times)
     cap.release()
 
+#Processing videos in parallel 
 def process_videos_in_folder_parallel(folder_path):
     # Obtener todos los archivos de video en la carpeta
     video_files = [f for f in os.listdir(folder_path) if f.endswith('.mp4') or f.endswith('.avi') or f.endswith('.MOV')]
@@ -145,7 +148,7 @@ def process_videos_in_folder_parallel(folder_path):
     with Pool() as pool:
         pool.map(process_video, video_paths)  # Ejecutar la función process_video en paralelo para cada video
 
-
+#Select folder from Tkinter
 def select_folder():
     root = tk.Tk()
     root.withdraw()  # Oculta la ventana principal de Tkinter
@@ -153,9 +156,9 @@ def select_folder():
     folder_path = filedialog.askdirectory()
     return folder_path
 
-
 if __name__ == "__main__":
-    folder_path = select_folder()
+    # Asigna directamente la ruta de la carpeta input_files
+    folder_path = os.path.join(os.getcwd(), "input_files")
 
     if not os.path.exists(folder_path):
         print("La carpeta no existe.")
