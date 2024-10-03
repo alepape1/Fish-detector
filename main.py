@@ -138,7 +138,7 @@ def process_video(video_path):
     # Liberar los recursos
     out.release()
     cap.release()
-    
+
 #Funcion para guardar el video resumen
 def save_video_segment(out, cap, start_time, end_time):
     # Asegurarse de que el start_time nunca sea menor que 0
@@ -182,6 +182,19 @@ def select_folder():
         return os.path.join(os.getcwd(), "video_files")
 
 if __name__ == "__main__":
+
+    print(cv2.__version__)
+
+
+    try:
+        num_threads = cv2.getNumberOfCPUs()
+        print(f"OpenCV está usando {num_threads} núcleos.")
+    except AttributeError:
+        print("La función getNumberOfThreads() no está disponible en esta versión de OpenCV.")
+
+
+    print(f"OpenCV está usando {num_threads} núcleos.")
+
     folder_path = select_folder()
 
     if not os.path.exists(folder_path):
