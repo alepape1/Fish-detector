@@ -106,7 +106,7 @@ def process_video(video_path):
     detected_fish = []
     start_times = []
     end_times = []
-    min_scene_duration = 2  # Minimum 3 seconds for a scene to be saved
+    min_scene_duration = 0  # Minimum 1 seconds for a scene to be saved
 
     while True:
         ret, frame = cap.read()
