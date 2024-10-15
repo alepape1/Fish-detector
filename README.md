@@ -22,7 +22,7 @@ Este proyecto es una aplicación de escritorio desarrollada en Python que proces
 ## Instalación
 1. Clona este repositorio:
 ```bash
-git clone https://github.com/tu-usuario/nombre-del-repo.git
+git clone https://github.com/alepape1/Fish-detector.git
 ```
 2. Instala las dependencias:
 ```bash
