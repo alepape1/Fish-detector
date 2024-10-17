@@ -12,6 +12,9 @@ Este proyecto es una aplicación de escritorio desarrollada en Python que proces
 - Visualización en tiempo real del procesamiento de video (opcional)
 - Barra de progreso y contador de porcentaje completado
 
+<img src="screenshots\image.png" alt="GUI de la app Fish-detector analizando un video donde un pez es detectado" width="600"/>
+
+
 
 ## Requisitos
 - Python v3.12.2
