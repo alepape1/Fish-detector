@@ -5,7 +5,6 @@ from multiprocessing import cpu_count,Pool
 import os
 import tkinter as tk
 from tkinter import filedialog  # Asegúrate de incluir esta línea
-git p
 
 # Inicialización de variables
 fgbg = cv2.bgsegm.createBackgroundSubtractorMOG()
